@@ -14,7 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      purchases: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          plan_type: string
+          status: string | null
+          stripe_session_id: string
+          updated_at: string | null
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          plan_type: string
+          status?: string | null
+          stripe_session_id: string
+          updated_at?: string | null
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          plan_type?: string
+          status?: string | null
+          stripe_session_id?: string
+          updated_at?: string | null
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
