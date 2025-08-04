@@ -107,8 +107,13 @@ serve(async (req) => {
       // Continue without email if auth fails
     }
 
-    // Construct redirect URLs
-    const successUrl = `${validatedOrigin}/?tier=${planType}&session_id={CHECKOUT_SESSION_ID}&payment=success`;
+    // Construct redirect URLs with custom success URLs per plan
+    const successUrls = {
+      starter: "https://pay.cogello.com/b/bJeaEX6E45Vq44T0We5ZC00",
+      pro: "https://pay.cogello.com/b/8x23cv9QgcjOathbAS5ZC01"
+    };
+    
+    const successUrl = successUrls[planType as keyof typeof successUrls];
     const cancelUrl = `${validatedOrigin}/?canceled=true`;
     
     console.log("Redirect URLs:", {
