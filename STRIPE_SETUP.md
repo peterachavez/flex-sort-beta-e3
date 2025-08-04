@@ -30,7 +30,7 @@ const priceConfig = {
     name: "Starter Plan - 3 Assessments"
   },
   pro: {
-    priceId: "price_YOUR_PRO_PRICE_ID", // Replace with actual Price ID
+    priceId: "price_1RsSJcEoPkN2ZliiJWR1CpRM", // Replace with actual Price ID
     amount: 9999,
     name: "Pro Plan - 10 Assessments"
   }
