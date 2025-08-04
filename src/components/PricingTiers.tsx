@@ -31,7 +31,7 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
       id: 'starter',
       name: 'Starter Plan',
       price: '$49.99',
-      description: '3 assessments with detailed insights and AI-generated interpretation',
+      description: '3 assessments with detailed insights and AI interpretation',
       features: [
         'Includes 3 separate assessments',
         'All features from Free',
@@ -45,7 +45,7 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
       id: 'pro',
       name: 'Pro Plan',
       price: '$99.99',
-      description: '10 assessments with advanced export options and clinical formatting',
+      description: '10 assessments with advanced export options',
       features: [
         'Includes 10 separate assessments',
         'All features from Starter Plan',
