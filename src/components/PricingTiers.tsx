@@ -21,32 +21,36 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
       return;
     }
 
-    // Paid plans - redirect to Stripe Checkout
+    // Paid plans - redirect directly to Stripe Payment Links
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-        body: { planType: selectedTier }
-      });
+      // Direct redirect URLs for each plan
+      const paymentUrls = {
+        starter: 'https://pay.cogello.com/b/bJeaEX6E45Vq44T0We5ZC00',
+        pro: 'https://pay.cogello.com/b/8x23cv9QgcjOathbAS5ZC01'
+      };
 
-      if (error) {
-        console.error('Error creating checkout session:', error);
-        alert('Failed to create checkout session. Please try again.');
-        return;
-      }
-
-      if (data?.url) {
-        // Redirect to Stripe Checkout
-        window.location.href = data.url;
+      const paymentUrl = paymentUrls[selectedTier as keyof typeof paymentUrls];
+      
+      if (paymentUrl) {
+        // Redirect directly to Stripe Payment Link
+        window.location.href = paymentUrl;
       } else {
-        throw new Error('No checkout URL received');
+        throw new Error('Invalid plan selected');
       }
+      
+      // Commented out backend edge function call:
+      // const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+      //   body: { planType: selectedTier }
+      // });
+      
     } catch (error) {
-      console.error('Checkout error:', error);
+      console.error('Payment redirect error:', error);
       alert('Payment processing error. Please try again.');
-    } finally {
       setIsLoading(false);
     }
+    // Note: setIsLoading(false) is not called on success since we're redirecting
   };
 
   const tiers = [
