@@ -24,7 +24,7 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
         'Number of Shifts Achieved',
         'Count of Perseverative Errors',
         'Basic performance summary',
-        'Digital results available immediately'
+        'Immediate digital results'
       ]
     },
     {
