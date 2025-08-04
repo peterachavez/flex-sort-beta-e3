@@ -130,8 +130,8 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
             Generated on {new Date(data.completed_at).toLocaleDateString()}
           </p>
           <div className="flex justify-center mt-2">
-            <Badge variant={tier === 'premium' ? 'default' : 'secondary'} className="capitalize">
-              {tier} Report
+            <Badge variant={tier === 'pro' ? 'default' : 'secondary'} className="capitalize">
+              {tier === 'free' ? 'Free' : tier === 'starter' ? 'Starter Plan' : 'Pro Plan'} Report
             </Badge>
           </div>
         </div>
@@ -195,8 +195,8 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
           </Card>
         </div>
 
-        {/* Performance Metrics for Standard and Premium with enhanced styling */}
-        {tier !== 'basic' && (
+        {/* Performance Metrics for Starter and Pro with enhanced styling */}
+        {(tier === 'starter' || tier === 'pro') && (
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
               <CardHeader className="pb-4">
@@ -291,8 +291,8 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
           </div>
         )}
 
-        {/* Premium Charts with Cogello green styling */}
-        {tier === 'premium' && (
+        {/* Pro Charts with Cogello green styling */}
+        {tier === 'pro' && (
           <div className="grid md:grid-cols-2 gap-8 mb-8">
             <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
               <CardHeader className="pb-4">
@@ -352,7 +352,7 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
         )}
 
         {/* Enhanced AI Summary */}
-        {tier === 'standard' || tier === 'premium' ? (
+        {(tier === 'starter' || tier === 'pro') && (
           <Card className="mb-8 shadow-lg hover:shadow-xl transition-shadow duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">AI-Generated Interpretation</CardTitle>
@@ -387,7 +387,7 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
                   {data.rule_training_triggered && ' Rule training was triggered, indicating significant difficulty with implicit rule learning that may benefit from explicit instruction.'}
                 </p>
 
-                {tier === 'premium' && (
+                {tier === 'pro' && (
                   <>
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4 mb-4">
                       <h4 className="font-semibold text-blue-800 mb-2">Clinical Implications</h4>
@@ -431,10 +431,10 @@ const ResultsDashboard = ({ data, tier }: ResultsDashboardProps) => {
               </div>
             </CardContent>
           </Card>
-        ) : null}
+        )}
 
-        {/* Export Options for Premium with enhanced styling */}
-        {tier === 'premium' && (
+        {/* Export Options for Pro with enhanced styling */}
+        {tier === 'pro' && (
           <Card className="shadow-lg hover:shadow-xl transition-shadow duration-200">
             <CardHeader className="pb-4">
               <CardTitle className="text-xl">Professional Export Options</CardTitle>
