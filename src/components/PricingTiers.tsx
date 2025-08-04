@@ -10,49 +10,50 @@ interface PricingTiersProps {
 }
 
 const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
-  const [selectedTier, setSelectedTier] = useState('premium');
+  const [selectedTier, setSelectedTier] = useState('pro');
 
   const tiers = [
     {
-      id: 'basic',
-      name: 'Basic',
-      price: '$9.99',
-      description: 'Essential metrics and summary',
+      id: 'free',
+      name: 'Free',
+      price: '$0',
+      description: 'One free cognitive assessment with basic results included',
       features: [
+        'One assessment included',
         'Cognitive Flexibility Score',
-        'Shifts Achieved',
-        'Perseverative Errors',
+        'Number of Shifts Achieved',
+        'Count of Perseverative Errors',
         'Basic performance summary',
-        'Digital report access'
+        'Digital results available immediately after assessment'
       ]
     },
     {
-      id: 'standard',
-      name: 'Standard',
-      price: '$19.99',
-      description: 'Comprehensive analysis with AI insights',
+      id: 'starter',
+      name: 'Starter Plan',
+      price: '$49.99',
+      description: '3 assessments with detailed insights and AI-generated interpretation',
       features: [
-        'Everything in Basic',
-        'AI-generated interpretation',
-        'Adaptation latency analysis',
-        'Response time patterns',
-        'Plain-language summary',
-        'Performance comparisons'
+        'Includes 3 separate assessments',
+        'All features from Free',
+        'AI-generated plain-language report',
+        'Adaptation latency insights',
+        'Response time breakdown',
+        'Deeper performance analysis per session'
       ]
     },
     {
-      id: 'premium',
-      name: 'Premium',
-      price: '$39.99',
-      description: 'Full clinical-grade assessment',
+      id: 'pro',
+      name: 'Pro Plan',
+      price: '$99.99',
+      description: '10 assessments with advanced export options and clinical formatting',
       features: [
-        'Everything in Standard',
-        'Detailed bar graphs & charts',
-        'Clinical interpretation',
-        'Legal/educational summary',
-        'PDF & CSV export',
-        'Raw data download',
-        'Professional formatting'
+        'Includes 10 separate assessments',
+        'All features from Starter Plan',
+        'Clinical-style interpretation',
+        'Legal/educational-use summary',
+        'Professional formatting for PDF reports',
+        'Downloadable PDF and CSV reports',
+        'Raw data access'
       ],
       popular: true
     }
@@ -133,9 +134,9 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
             onClick={() => onTierSelect(selectedTier)}
             className="bg-[#149854] hover:bg-[#149854]/90 text-white px-12 py-4 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
           >
-            {selectedTierData?.id === 'premium' ? 'Unlock Results - $39.99' : 
-             selectedTierData?.id === 'standard' ? 'Select Standard - $19.99' : 
-             'Select Basic - $9.99'}
+            {selectedTierData?.id === 'pro' ? 'Unlock Results - $99.99' : 
+             selectedTierData?.id === 'starter' ? 'Select Starter Plan - $49.99' : 
+             'Select Free Plan - $0'}
           </Button>
         </div>
 
@@ -143,7 +144,7 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
         <div className="text-center">
           <p className="text-xs text-gray-500 max-w-2xl mx-auto">
             Secure payment processing. All reports include privacy protection and are available immediately after purchase. 
-            30-day money-back guarantee if you're not satisfied with your results.
+            7-day money-back guarantee if you're not satisfied with your results.
           </p>
         </div>
       </div>
