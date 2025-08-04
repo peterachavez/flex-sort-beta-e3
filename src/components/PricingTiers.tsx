@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
+import { createClient } from '@supabase/supabase-js';
 
 interface PricingTiersProps {
   onTierSelect: (tier: string) => void;
@@ -11,6 +12,48 @@ interface PricingTiersProps {
 
 const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
   const [selectedTier, setSelectedTier] = useState('pro');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Initialize Supabase client
+  const supabase = createClient(
+    import.meta.env.VITE_SUPABASE_URL!,
+    import.meta.env.VITE_SUPABASE_ANON_KEY!
+  );
+
+  const handlePlanSelection = async () => {
+    // Free plan - no payment needed
+    if (selectedTier === 'free') {
+      onTierSelect(selectedTier);
+      return;
+    }
+
+    // Paid plans - redirect to Stripe Checkout
+    try {
+      setIsLoading(true);
+      
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: { planType: selectedTier }
+      });
+
+      if (error) {
+        console.error('Error creating checkout session:', error);
+        alert('Failed to create checkout session. Please try again.');
+        return;
+      }
+
+      if (data?.url) {
+        // Redirect to Stripe Checkout
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL received');
+      }
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert('Payment processing error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const tiers = [
     {
@@ -131,11 +174,13 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
         {/* Single centered button below cards */}
         <div className="text-center mb-8">
           <Button 
-            onClick={() => onTierSelect(selectedTier)}
-            className="bg-[#149854] hover:bg-[#149854]/90 text-white px-12 py-4 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={handlePlanSelection}
+            disabled={isLoading}
+            className="bg-[#149854] hover:bg-[#149854]/90 text-white px-12 py-4 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {selectedTierData?.id === 'pro' ? 'Unlock Results - $99.99' : 
-             selectedTierData?.id === 'starter' ? 'Select Starter Plan - $49.99' : 
+            {isLoading ? 'Processing...' : 
+             selectedTierData?.id === 'pro' ? 'Unlock Results - $99.99' : 
+             selectedTierData?.id === 'starter' ? 'Unlock Results - $49.99' : 
              'Select Free Plan - $0'}
           </Button>
         </div>

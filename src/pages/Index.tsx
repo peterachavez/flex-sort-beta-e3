@@ -79,6 +79,22 @@ const Index = () => {
     setCurrentPhase('results');
   };
 
+  // Handle Stripe success redirect
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tier = urlParams.get('tier');
+    const sessionId = urlParams.get('session_id');
+    
+    if (tier && sessionId) {
+      // Payment successful, unlock results
+      setSelectedTier(tier);
+      setCurrentPhase('results');
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, '/');
+    }
+  }, []);
+
   const renderCurrentPhase = () => {
     switch (currentPhase) {
       case 'welcome':
