@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from "@/integrations/supabase/client";
 
 interface PricingTiersProps {
   onTierSelect: (tier: string) => void;
@@ -13,12 +13,6 @@ interface PricingTiersProps {
 const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
   const [selectedTier, setSelectedTier] = useState('pro');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Initialize Supabase client
-  const supabase = createClient(
-    import.meta.env.VITE_SUPABASE_URL!,
-    import.meta.env.VITE_SUPABASE_ANON_KEY!
-  );
 
   const handlePlanSelection = async () => {
     // Free plan - no payment needed
