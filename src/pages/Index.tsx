@@ -7,7 +7,7 @@ import PracticeTrials from '../components/PracticeTrials';
 import FlexSortTask from '../components/FlexSortTask';
 import PostAssessment from '../components/PostAssessment';
 import PricingTiers from '../components/PricingTiers';
-import ResultsDashboard from '../components/ResultsDashboard';
+import PaymentVerificationWrapper from '../components/PaymentVerificationWrapper';
 
 export type AppPhase = 
   | 'welcome' 
@@ -79,6 +79,8 @@ const Index = () => {
     setCurrentPhase('results');
   };
 
+  const [sessionId, setSessionId] = useState<string>('');
+
   // Handle Stripe success redirect
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -86,7 +88,8 @@ const Index = () => {
     const sessionId = urlParams.get('session_id');
     
     if (tier && sessionId) {
-      // Payment successful, unlock results
+      // Store session ID for payment verification
+      setSessionId(sessionId);
       setSelectedTier(tier);
       setCurrentPhase('results');
       
@@ -114,7 +117,7 @@ const Index = () => {
       case 'pricing':
         return <PricingTiers onTierSelect={handleTierSelection} />;
       case 'results':
-        return <ResultsDashboard data={assessmentData} tier={selectedTier} />;
+        return <PaymentVerificationWrapper data={assessmentData} tier={selectedTier} sessionId={sessionId} />;
       default:
         return <WelcomeScreen onNext={() => handlePhaseTransition('consent')} />;
     }
