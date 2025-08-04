@@ -25,12 +25,12 @@ In `supabase/functions/create-checkout-session/index.ts`, replace these lines:
 ```typescript
 const priceConfig = {
   starter: {
-    priceId: "price_YOUR_STARTER_PRICE_ID", // Replace with actual Price ID
+    priceId: "price_1RsSH2EoPkN2ZliiH7MxOY8w", // Replace with actual Price ID
     amount: 4999,
     name: "Starter Plan - 3 Assessments"
   },
   pro: {
-    priceId: "price_YOUR_PRO_PRICE_ID", // Replace with actual Price ID
+    priceId: "price_1RsSJcEoPkN2ZliiJWR1CpRM", // Replace with actual Price ID
     amount: 9999,
     name: "Pro Plan - 10 Assessments"
   }
