@@ -15,43 +15,40 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePlanSelection = async () => {
-    // Free plan - no payment needed
-    if (selectedTier === 'free') {
-      onTierSelect(selectedTier);
-      return;
-    }
+  if (selectedTier === 'free') {
+    onTierSelect(selectedTier);
+    return;
+  }
 
-    // Paid plans - redirect directly to Stripe Payment Links
-    try {
-      setIsLoading(true);
-      
-      // Direct redirect URLs for each plan
-      const paymentUrls = {
-        starter: 'https://pay.cogello.com/b/bJeaEX6E45Vq44T0We5ZC00',
-        pro: 'https://pay.cogello.com/b/8x23cv9QgcjOathbAS5ZC01'
-      };
+  try {
+    setIsLoading(true);
 
-      const paymentUrl = paymentUrls[selectedTier as keyof typeof paymentUrls];
+    const paymentUrls = {
+      starter: 'https://pay.cogello.com/b/bJeaEX6E45Vq44T0We5ZC00',
+      pro: 'https://pay.cogello.com/b/8x23cv9QgcjOathbAS5ZC01'
+    };
+
+    const paymentUrl = paymentUrls[selectedTier as keyof typeof paymentUrls];
+
+    if (paymentUrl) {
+      console.log('Redirecting to payment URL:', paymentUrl);
       
-      if (paymentUrl) {
-        // Redirect directly to Stripe Payment Link
-        window.location.href = paymentUrl;
+      // Use window.top to break out of iframe if needed
+      if (window.top !== window.self) {
+        window.top.location.href = paymentUrl;
       } else {
-        throw new Error('Invalid plan selected');
+        window.location.href = paymentUrl;
       }
-      
-      // Commented out backend edge function call:
-      // const { data, error } = await supabase.functions.invoke('create-checkout-session', {
-      //   body: { planType: selectedTier }
-      // });
-      
-    } catch (error) {
-      console.error('Payment redirect error:', error);
-      alert('Payment processing error. Please try again.');
-      setIsLoading(false);
+    } else {
+      throw new Error('Invalid plan selected');
     }
-    // Note: setIsLoading(false) is not called on success since we're redirecting
-  };
+
+  } catch (error) {
+    console.error('Payment redirect error:', error);
+    alert('Payment processing error. Please try again.');
+    setIsLoading(false);
+  }
+};
 
   const tiers = [
     {
