@@ -31,13 +31,30 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
     const paymentUrl = paymentUrls[selectedTier as keyof typeof paymentUrls];
 
     if (paymentUrl) {
-      console.log('Redirecting to payment URL:', paymentUrl);
-      
-      // Use window.top to break out of iframe if needed
-      if (window.top !== window.self) {
-        window.top.location.href = paymentUrl;
-      } else {
-        window.location.href = paymentUrl;
+      console.log('Selected plan:', selectedTier);
+      console.log('Payment URL:', paymentUrl);
+      console.log('Is in iframe:', window.top !== window.self);
+      console.log('Window context:', { top: window.top, self: window.self });
+
+      // Try multiple redirect strategies for maximum compatibility
+      try {
+        // Strategy 1: Check if we're in an iframe and try to break out
+        if (window.top !== window.self) {
+          console.log('Attempting iframe breakout redirect...');
+          window.top!.location.href = paymentUrl;
+        } else {
+          console.log('Attempting direct redirect...');
+          window.location.href = paymentUrl;
+        }
+      } catch (redirectError) {
+        console.warn('Direct redirect failed, trying new tab:', redirectError);
+        // Strategy 2: Fallback to opening in new tab
+        const newTab = window.open(paymentUrl, '_blank');
+        if (!newTab) {
+          throw new Error('Popup blocked. Please allow popups for payment processing.');
+        }
+        console.log('Opened payment page in new tab');
+        setIsLoading(false);
       }
     } else {
       throw new Error('Invalid plan selected');
@@ -45,7 +62,8 @@ const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
 
   } catch (error) {
     console.error('Payment redirect error:', error);
-    alert('Payment processing error. Please try again.');
+    const errorMessage = error instanceof Error ? error.message : 'Payment processing error. Please try again.';
+    alert(errorMessage);
     setIsLoading(false);
   }
 };
