@@ -16,15 +16,15 @@ serve(async (req) => {
   try {
     // Get environment variables
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
-    const starterPriceId = Deno.env.get("STARTER_PLAN_PRICE_ID");
-    const proPriceId = Deno.env.get("PRO_PLAN_PRICE_ID");
+    const starterPriceId = Deno.env.get("STARTER_PRICE_ID");
+    const proPriceId = Deno.env.get("PRO_PRICE_ID");
 
     if (!stripeSecretKey) {
       throw new Error("STRIPE_SECRET_KEY environment variable is not set");
     }
 
     if (!starterPriceId || !proPriceId) {
-      throw new Error("STARTER_PLAN_PRICE_ID and PRO_PLAN_PRICE_ID environment variables must be set");
+      throw new Error("STARTER_PRICE_ID and PRO_PRICE_ID environment variables must be set");
     }
 
     // Initialize Stripe with secret key
