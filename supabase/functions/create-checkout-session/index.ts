@@ -65,13 +65,24 @@ serve(async (req) => {
     }
 
     const config = priceConfig[planType as keyof typeof priceConfig];
-    const origin = req.headers.get("origin") || "http://localhost:5173";
+    
+    // Get and validate origin for redirect URLs
+    const origin = req.headers.get("origin") || req.headers.get("referer")?.split('/').slice(0, 3).join('/') || "http://localhost:5173";
+    
+    // Ensure origin has protocol
+    const validatedOrigin = origin.startsWith('http') ? origin : `https://${origin}`;
+    
+    console.log("Origin validation:", {
+      rawOrigin: req.headers.get("origin"),
+      referer: req.headers.get("referer"),
+      finalOrigin: validatedOrigin
+    });
     
     console.log("Using config:", { 
       planType, 
       priceId: config.priceId, 
       amount: config.amount, 
-      origin 
+      origin: validatedOrigin 
     });
 
     // Get user email from auth if available
@@ -96,6 +107,15 @@ serve(async (req) => {
       // Continue without email if auth fails
     }
 
+    // Construct redirect URLs
+    const successUrl = `${validatedOrigin}/?tier=${planType}&session_id={CHECKOUT_SESSION_ID}&payment=success`;
+    const cancelUrl = `${validatedOrigin}/?canceled=true`;
+    
+    console.log("Redirect URLs:", {
+      successUrl,
+      cancelUrl
+    });
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       customer_email: customerEmail,
@@ -106,15 +126,20 @@ serve(async (req) => {
         },
       ],
       mode: "payment", // One-time payment
-      success_url: `${origin}/?tier=${planType}&session_id={CHECKOUT_SESSION_ID}&payment=success`,
-      cancel_url: `${origin}/?canceled=true`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         planType: planType,
         userEmail: customerEmail || "guest",
       },
     });
 
-    console.log("Checkout session created:", session.id);
+    console.log("Checkout session created successfully:", {
+      sessionId: session.id,
+      sessionUrl: session.url,
+      planType,
+      priceId: config.priceId
+    });
 
     return new Response(
       JSON.stringify({ url: session.url }),
