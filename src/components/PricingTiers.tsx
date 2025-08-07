@@ -1,213 +1,135 @@
+'use client'
 
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { CheckCircle, Check } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { toast } from 'sonner'
 
-interface PricingTiersProps {
-  onTierSelect: (tier: string) => void;
-}
+const PLANS = [
+  {
+    name: 'Free',
+    price: 0,
+    features: [
+      'One assessment included',
+      'Cognitive Flexibility Score',
+      'Number of Shifts Achieved',
+      'Count of Perseverative Errors',
+      'Basic performance summary',
+      'Immediate digital results',
+    ],
+    description: 'One free cognitive assessment with basic results included',
+    priceId: null, // No Stripe payment
+  },
+  {
+    name: 'Starter Plan',
+    price: 49.99,
+    features: [
+      'Includes 3 separate assessments',
+      'All features from Free',
+      'AI-generated plain-language report',
+      'Adaptation latency insights',
+      'Response time breakdown',
+      'Deeper performance analysis per session',
+    ],
+    description: '3 assessments with detailed insights and AI interpretation',
+    priceId: process.env.NEXT_PUBLIC_STARTER_PRICE_ID,
+  },
+  {
+    name: 'Pro Plan',
+    price: 99.99,
+    features: [
+      'Includes 10 separate assessments',
+      'All features from Starter Plan',
+      'Clinical-style interpretation',
+      'Legal/educational-use summary',
+      'Professional formatting for PDF reports',
+      'Downloadable PDF and CSV reports',
+      'Raw data access',
+    ],
+    description: '10 assessments with advanced export options',
+    priceId: process.env.NEXT_PUBLIC_PRO_PRICE_ID,
+    mostPopular: true,
+  },
+]
 
-const PricingTiers = ({ onTierSelect }: PricingTiersProps) => {
-  const [selectedTier, setSelectedTier] = useState('pro');
-  const [isLoading, setIsLoading] = useState(false);
+export default function PricingTiers() {
+  const [selected, setSelected] = useState(PLANS[2]) // Default: Pro
+  const router = useRouter()
 
-  const handlePlanSelection = async () => {
-  if (selectedTier === 'free') {
-    onTierSelect(selectedTier);
-    return;
-  }
-
-  try {
-    setIsLoading(true);
-
-    const paymentUrls = {
-      starter: 'https://pay.cogello.com/b/bJeaEX6E45Vq44T0We5ZC00',
-      pro: 'https://pay.cogello.com/b/8x23cv9QgcjOathbAS5ZC01'
-    };
-
-    const paymentUrl = paymentUrls[selectedTier as keyof typeof paymentUrls];
-
-    if (paymentUrl) {
-      console.log('Selected plan:', selectedTier);
-      console.log('Payment URL:', paymentUrl);
-      console.log('Is in iframe:', window.top !== window.self);
-      console.log('Window context:', { top: window.top, self: window.self });
-
-      // Try multiple redirect strategies for maximum compatibility
-      try {
-        // Strategy 1: Check if we're in an iframe and try to break out
-        if (window.top !== window.self) {
-          console.log('Attempting iframe breakout redirect...');
-          window.top!.location.href = paymentUrl;
-        } else {
-          console.log('Attempting direct redirect...');
-          window.location.href = paymentUrl;
-        }
-      } catch (redirectError) {
-        console.warn('Direct redirect failed, trying new tab:', redirectError);
-        // Strategy 2: Fallback to opening in new tab
-        const newTab = window.open(paymentUrl, '_blank');
-        if (!newTab) {
-          throw new Error('Popup blocked. Please allow popups for payment processing.');
-        }
-        console.log('Opened payment page in new tab');
-        setIsLoading(false);
-      }
-    } else {
-      throw new Error('Invalid plan selected');
+  const handleCheckout = async () => {
+    if (selected.price === 0) {
+      router.push('/results') // Directly show results
+      return
     }
 
-  } catch (error) {
-    console.error('Payment redirect error:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Payment processing error. Please try again.';
-    alert(errorMessage);
-    setIsLoading(false);
-  }
-};
+    const res = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      body: JSON.stringify({
+        priceId: selected.priceId,
+        tier: selected.name, // optionally use this for metadata
+      }),
+    })
 
-  const tiers = [
-    {
-      id: 'free',
-      name: 'Free',
-      price: '$0',
-      description: 'One free cognitive assessment with basic results included',
-      features: [
-        'One assessment included',
-        'Cognitive Flexibility Score',
-        'Number of Shifts Achieved',
-        'Count of Perseverative Errors',
-        'Basic performance summary',
-        'Immediate digital results'
-      ]
-    },
-    {
-      id: 'starter',
-      name: 'Starter Plan',
-      price: '$49.99',
-      description: '3 assessments with detailed insights and AI interpretation',
-      features: [
-        'Includes 3 separate assessments',
-        'All features from Free',
-        'AI-generated plain-language report',
-        'Adaptation latency insights',
-        'Response time breakdown',
-        'Deeper performance analysis per session'
-      ]
-    },
-    {
-      id: 'pro',
-      name: 'Pro Plan',
-      price: '$99.99',
-      description: '10 assessments with advanced export options',
-      features: [
-        'Includes 10 separate assessments',
-        'All features from Starter Plan',
-        'Clinical-style interpretation',
-        'Legal/educational-use summary',
-        'Professional formatting for PDF reports',
-        'Downloadable PDF and CSV reports',
-        'Raw data access'
-      ],
-      popular: true
+    if (!res.ok) {
+      toast.error('Something went wrong. Please try again.')
+      return
     }
-  ];
 
-  const selectedTierData = tiers.find(tier => tier.id === selectedTier);
+    const data = await res.json()
+    if (data.url) {
+      window.location.href = data.url
+    }
+  }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 py-12">
-      <div className="max-w-4xl mx-auto w-full">
-        {/* Header with green checkmark */}
-        <div className="text-center mb-12">
-          <div className="w-16 h-16 bg-[#149854] rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-semibold text-gray-800 mb-4">
-            Your cognitive profile is ready
-          </h1>
-          <p className="text-gray-600 text-lg">
-            Select a pricing tier to unlock your personalized results
-          </p>
-        </div>
+    <div className="flex flex-col items-center px-4 py-10">
+      <CheckCircle className="w-10 h-10 text-green-500 mb-2" />
+      <h1 className="text-2xl font-semibold mb-2 text-center">Your cognitive profile is ready</h1>
+      <p className="text-muted-foreground text-center mb-8">Select a pricing tier to unlock your personalized results</p>
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
-          {tiers.map((tier) => (
-            <Card 
-              key={tier.id} 
-              className={`relative shadow-lg transition-all duration-200 hover:shadow-xl cursor-pointer ${
-                selectedTier === tier.id
-                  ? 'border-2 border-[#149854] bg-[#149854]/5' 
-                  : 'border border-gray-200 hover:border-gray-300'
-              }`}
-              onClick={() => setSelectedTier(tier.id)}
-            >
-              {tier.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge className="bg-[#149854] text-white px-4 py-1 text-sm">Most Popular</Badge>
-                </div>
-              )}
-              
-              <CardContent className="p-8 text-center h-full flex flex-col">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  {tier.name}
-                </h3>
-                <div className="text-3xl font-bold text-gray-900 mb-2">
-                  {tier.price}
-                </div>
-                <p className="text-gray-600 text-sm mb-6">
-                  {tier.description}
-                </p>
-
-                <ul className="space-y-3 mb-8 text-left flex-grow">
-                  {tier.features.map((feature, index) => (
-                    <li key={index} className="flex items-start space-x-3">
-                      <Check className="w-4 h-4 text-[#149854] mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-700 text-sm">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {/* Selection indicator */}
-                {selectedTier === tier.id && (
-                  <div className="absolute top-4 right-4">
-                    <div className="w-6 h-6 bg-[#149854] rounded-full flex items-center justify-center">
-                      <Check className="w-4 h-4 text-white" />
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Single centered button below cards */}
-        <div className="text-center mb-8">
-          <Button 
-            onClick={handlePlanSelection}
-            disabled={isLoading}
-            className="bg-[#149854] hover:bg-[#149854]/90 text-white px-12 py-4 text-lg font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6 max-w-5xl w-full">
+        {PLANS.map((plan) => (
+          <div
+            key={plan.name}
+            onClick={() => setSelected(plan)}
+            className={cn(
+              'border rounded-lg p-6 shadow-sm cursor-pointer transition hover:shadow-md',
+              selected.name === plan.name && 'border-green-600 ring-2 ring-green-500',
+              plan.mostPopular && 'relative'
+            )}
           >
-            {isLoading ? 'Processing...' : 
-             selectedTierData?.id === 'pro' ? 'Unlock Results - $99.99' : 
-             selectedTierData?.id === 'starter' ? 'Unlock Results - $49.99' : 
-             'Select Free Plan - $0'}
-          </Button>
-        </div>
-
-        {/* Bottom disclaimer */}
-        <div className="text-center">
-          <p className="text-xs text-gray-500 max-w-2xl mx-auto">
-            Secure payment processing. All reports include privacy protection and are available immediately after purchase. 
-            7-day money-back guarantee if you're not satisfied with your results.
-          </p>
-        </div>
+            {plan.mostPopular && (
+              <div className="absolute top-0 right-0 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-bl-md">
+                Most Popular
+              </div>
+            )}
+            <h2 className="text-lg font-semibold mb-1">{plan.name}</h2>
+            <p className="text-2xl font-bold mb-2">${plan.price}</p>
+            <p className="text-muted-foreground text-sm mb-4">{plan.description}</p>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </div>
-    </div>
-  );
-};
 
-export default PricingTiers;
+      <Button size="lg" onClick={handleCheckout} className="w-full max-w-sm">
+        {selected.price === 0
+          ? 'Unlock Free Results'
+          : `Unlock Results – $${selected.price}`}
+      </Button>
+
+      <p className="text-xs text-muted-foreground mt-4 text-center max-w-md">
+        Secure payment processing. All reports include privacy protection and are available immediately after purchase.
+        7-day money-back guarantee if you’re not satisfied with your results.
+      </p>
+    </div>
+  )
+}
